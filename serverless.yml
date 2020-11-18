@@ -10,12 +10,12 @@ provider:
   region: us-east-1
 
 functions:
-  LookAtThisLambda:
-    handler: src/lookAtThisLambda.handler
+  FirstLambda:
+    handler: src/firstLambda.handler
     environment:
       AN_ENV_VAR: 'Una variable util'
       QUEUE_URL: !Ref ColaQueue
-    iamRoleStatementsName: ${self:service}-${self:provider.stage}-LookAtThisLambdaRole
+    iamRoleStatementsName: ${self:service}-${self:provider.stage}-FirstLambdaLambdaRole
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -28,14 +28,28 @@ functions:
           method: post
           cors: true
 
-  FinalLambda:
-    handler: src/finalLambda.handler
+  SecondLambda:
+    handler: src/secondLambda.handler
     environment:
-      AN_ENV_VAR: 'Una variable util'
+      OUTPUT_LAMBDA: ${self:service}-${self:provider.stage}-ThirdLambda
+    iamRoleStatementsName: ${self:service}-${self:provider.stage}-SecondLambdaRole
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - sqs:ReceiveMessage
+        Resource:
+          - !GetAtt ColaQueue.Arn
+      - Effect: Allow
+        Action:
+          - lambda:InvokeFunction
+        Resource: "*"
     events:
       - sqs:
           arn:
             !GetAtt ColaQueue.Arn
+  ThirdLambda:
+    handler: src/thirdLambda.handler
+   
 
 resources:
   Resources:
