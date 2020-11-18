@@ -49,6 +49,14 @@ functions:
             !GetAtt ColaQueue.Arn
   ThirdLambda:
     handler: src/thirdLambda.handler
+    environment:
+      SNS_ARN: !Ref MailerTopic
+    iamRoleStatementsName: ${self:service}-${self:provider.stage}-ThirdLambda
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - sns:Publish
+        Resource: !Ref MailerTopic
    
 
 resources:
@@ -57,3 +65,12 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${self:service}-${self:provider.stage}-ColaQueue
+    MailerTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: Mailer SNS Topic
+        TopicName: ${self:service}-${self:provider.stage}-MailerTopic
+        Subscription:
+          - Protocol: email
+            Endpoint: marcosalejandrovalle@gmail.com
+          
