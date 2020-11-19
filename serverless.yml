@@ -11,9 +11,8 @@ provider:
 
 functions:
   FirstLambda:
-    handler: src/firstLambda.handler
+    handler: src/first-lambda/handler/firstLambda.handler
     environment:
-      AN_ENV_VAR: 'Una variable util'
       QUEUE_URL: !Ref ColaQueue
     iamRoleStatementsName: ${self:service}-${self:provider.stage}-FirstLambdaLambdaRole
     iamRoleStatements:
@@ -29,7 +28,7 @@ functions:
           cors: true
 
   SecondLambda:
-    handler: src/secondLambda.handler
+    handler: src/second-lambda/handler/secondLambda.handler
     environment:
       OUTPUT_LAMBDA: ${self:service}-${self:provider.stage}-ThirdLambda
     iamRoleStatementsName: ${self:service}-${self:provider.stage}-SecondLambdaRole
@@ -48,7 +47,7 @@ functions:
           arn:
             !GetAtt ColaQueue.Arn
   ThirdLambda:
-    handler: src/thirdLambda.handler
+    handler: src/third-lambda/handler/thirdLambda.handler
     environment:
       SNS_ARN: !Ref MailerTopic
     iamRoleStatementsName: ${self:service}-${self:provider.stage}-ThirdLambda
