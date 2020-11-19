@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.793.0",
+    "ebased": "^1.6.2",
     "serverless-iam-roles-per-function": "^2.0.2"
   }
 }

@@ -1,23 +1,23 @@
-const AWS = require("aws-sdk");
-const lambda = new AWS.Lambda();
+const { batchEventMapper } = require("ebased/handler");
 
-async function handler(event) {
-  try {
-    const invokeResult = await lambda
-      .invoke({
-        FunctionName: process.env.OUTPUT_LAMBDA
-      })
-      .promise();
-    console.log(invokeResult);
-  } catch (error) {
-    console.log(error);
-  }
+const inputMode = require("ebased/handler/input/batchEventQueue");
+const outputMode = require("ebased/handler/output/batchEventConfirmation");
 
-  event.Records.map((record) => {
-    console.log(JSON.parse(record.body).message);
+const lambda = require("ebased/service/downstream/lambda");
+
+const domain = async (eventPayload) => {
+  await lambdaService(eventPayload);
+};
+
+const lambdaService = async (payload) => {
+  await lambda.invoke({
+    FunctionName: process.env.OUTPUT_LAMBDA,
+    Payload: payload,
   });
+};
 
-  return { statusCode: 200 };
+async function handler(events, context) {
+  return batchEventMapper({ events, context }, inputMode, domain, outputMode);
 }
 
 module.exports = { handler };

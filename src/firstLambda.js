@@ -1,33 +1,33 @@
-const AWS = require('aws-sdk');
-const sqs = new AWS.SQS();
-const QUEUE_URL = process.env.QUEUE_URL;
+const { commandMapper } = require("ebased/handler");
 
-async function handler(event) {
-  console.log(`You've called this awesome lambda with this body ${event.body}`);
+const inputMode = require("ebased/handler/input/commandApi");
+const outputMode = require("ebased/handler/output/commandApi");
 
-  try {
-    const payload = JSON.parse(event.body).name;
+const sqs = require("ebased/service/downstream/sqs");
 
-    await sqs.sendMessage({
-      MessageBody: JSON.stringify({
-        message: `Hola ${payload}`,
-      }),
-      QueueUrl: QUEUE_URL,
-    }).promise();
-
-  } catch (err) {
-    console.log(err);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ success: false }),
-    };
-  }
+const domain = async ({ name }) => {
+  await sqsService(name);
 
   return {
-    statusCode: 200,
-    body: JSON.stringify({ success: true }),
+    body: {
+      message: `${name} is being processed`,
+    },
   };
 };
+
+const sqsService = async (payload) => {
+  const sqsSendParams = {
+    MessageBody: {
+      Payload: payload,
+    },
+    QueueUrl: process.env.QUEUE_URL,
+  };
+
+  await sqs.send(sqsSendParams);
+};
+
+async function handler(command, context) {
+  return commandMapper({ command, context }, inputMode, domain, outputMode);
+}
 
 module.exports = { handler };

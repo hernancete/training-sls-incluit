@@ -1,23 +1,22 @@
-const AWS = require("aws-sdk");
-const sns = new AWS.SNS();
+const { commandMapper } = require("ebased/handler");
+const inputMode = require("ebased/handler/input/commandInvoke");
+const outputMode = require("ebased/handler/output/commandInvoke");
 
-async function handler(event) {
-  try {
-    console.log("Writing from outputLambda");
+const sns = require("ebased/service/downstream/sns");
 
-    const publishResult = await sns
-      .publish({
-        Message: "Send from thirdLambda",
-        TopicArn: process.env.SNS_ARN,
-      })
-      .promise();
+const domain = async ({ Payload }) => {
+  await snsService(Payload);
+};
 
-    console.log(publishResult);
-  } catch (error) {
-    console.log(error);
-  }
+const snsService = async (payload) => {
+  await sns.publish({
+    Message: `${payload} has been processed!`,
+    TopicArn: process.env.SNS_ARN,
+  });
+};
 
-  return { statusCode: 200 };
+async function handler(command, context) {
+  return commandMapper({ command, context }, inputMode, domain, outputMode);
 }
 
 module.exports = { handler };

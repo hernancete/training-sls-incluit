@@ -42,7 +42,7 @@ functions:
       - Effect: Allow
         Action:
           - lambda:InvokeFunction
-        Resource: "*"
+        Resource: !GetAtt ThirdLambdaLambdaFunction.Arn
     events:
       - sqs:
           arn:
